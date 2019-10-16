@@ -20,11 +20,12 @@ class image_processing(object):
         #check if file exists 
 
         #read in file and store color 
-        self.img_colour = cv.imread(ideal_image_fn)
+        self.img_colour = cv.imread(ideal_image_fn, 1)
 
         #read image as gray scale 
-        self.img = cv.imread(ideal_image_fn, cv.IMREAD_GRAYSCALE)
+        self.img = cv.imread(ideal_image_fn, 0)
 
+        # note, shape outputs colour channels too iff its a colour image
         self.height, self.width = self.img.shape
 
         #declare sift environment 
@@ -44,7 +45,7 @@ class image_processing(object):
 
         img_colour2 = cv.imread(img2_name,1)
 
-        img2 = cv.imread(img2_name, cv.IMREAD_GRAYSCALE)
+        img2 = cv.imread(img2_name, 0)
 
         im2Reg = self.SIFT_image_alignment(img2, save_file)
 
