@@ -3,11 +3,12 @@ import cv2 as cv
 import matplotlib.pyplot as plt
 import re
 from PIL import Image, ImageDraw
+import os
 
 # pip install opencv-python==3.4.2.16
 # pip install opencv-contrib-python==3.4.2.16 for sift and surf w/o headache
 
-
+############################################################################
 def grid_values(name, step_size, stepcount):
     # read in image (colour)
     im = cv.imread(name, 0)
@@ -31,8 +32,8 @@ def grid_values(name, step_size, stepcount):
         # iterate through for the number of grids in the x direction
         for j in range(gridsx):
             # iterate through for the values in each grid along the x then y axes from bottom to top
-            stdev[i, j] = np.std(im[x_current:x_current+step_size, y_current:y_current+step_size])
-            average[i, j] = np.mean(im[x_current:x_current+step_size, y_current:y_current+step_size])
+            stdev[i, j] = np.std(im[y_current:y_current+step_size, x_current:x_current+step_size])
+            average[i, j] = np.mean(im[y_current:y_current+step_size, x_current:x_current+step_size])
             # iterate the x value across the width of the image
             x_current = x_current + step_size
         # reset the x location
@@ -40,13 +41,6 @@ def grid_values(name, step_size, stepcount):
         # iterate the y location to end
         y_current = y_current + step_size
     return stdev, average
-
-
-#for x in range(step_size):
-#    # take the standard deviation for every column in the grid, limited by the y constraints imposed
-#    temp[x] = np.std(im[x_current + x, y_current:y_current + step_size])
-# take the standard deviation of all the standard deviations in the grid
-#a[i, j] = np.std(temp)
 
 ############################################################################
 def imageGridding(base_name, name, stepcount):
@@ -88,27 +82,36 @@ def imageGridding(base_name, name, stepcount):
 
 ############################################################################
 
-    # I have a folder for images because they suck
-path = r'C:\Users\Lewis\Desktop\Senior_Projects\Photos'
+path = os.getcwd()
 
 # assign image names
     # 1st image is baseline, second is bad image
-img1_name = path+'\\'+'whats1.jpeg'
-img2_name = path+'\\'+'whats3.jpeg'
+
+    # look in the photos folder in the cd to extract the images from
+
+img1_name = os.path.join(path, 'Photos', 'whats1.jpeg')
+img2_name = os.path.join(path, 'Photos', '.jpeg')
 
 try:
     # read image and store in colour
     img_colour = cv.imread(img1_name, 1)
     img_colour2 = cv.imread(img2_name, 1)
 
-    #cv.imwrite('colour rotated2.jpg',img_colour2)
-
-    # read image and store in gray scale
+    # read image and store in grayscale
     img = cv.imread(img1_name, cv.IMREAD_GRAYSCALE)
     img2 = cv.imread(img2_name, cv.IMREAD_GRAYSCALE)
 
-    #cv.imwrite('grayscale.png', img2)
+    # raise an exception if we can't read the images
+    if img is None or img2 is None:
+        raise Exception('Folder "Photos" or file does not exist')
 
+# except case if can't read the image
+except Exception:
+    print('Folder "Photos" does not exist within your current directory or does not contain the filename provided')
+    # if image isn't in right, then it's a waste of time to try SIFT
+    exit()
+
+try:
     # create sift env
     sift = cv.xfeatures2d.SIFT_create()
 
@@ -160,9 +163,10 @@ try:
     imSaveName = 'Final.png'
     cv.imwrite(imSaveName, im2Reg)
 
+    imageGridding(img1_name, imSaveName, 10)
+
 
 except:
     print('That''s not a bingo!')
 
-# add grids
-imageGridding(img1_name, imSaveName, 10)
+
