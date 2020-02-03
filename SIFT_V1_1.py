@@ -15,9 +15,13 @@ from netCDF4 import Dataset
 class ImageProcessing(object):
 
     # initialise all necessary variables
-    def __init__(self, stepcount, folder_name, file_name, base_name, save_name, save_folder, N_MATCHES = 500):
-        # steps for grid
-        self.stepcount = stepcount
+    def __init__(self, pixel_inch, grid_size, folder_name, file_name, base_name, save_name, save_folder, N_MATCHES = 500):
+        # pixels/inch
+        self.pixels_inch = pixel_inch
+        # size of grid
+        self.grid_size = grid_size
+        # number of grids
+        self.step_size = pixel_inch*grid_size
         # name of folder that fields are saved to
         self.folder_name = folder_name
         # name of image that needs to be SIFTed
@@ -159,7 +163,7 @@ class ImageProcessing(object):
         y_start = 0
         y_end = im.height
         # set step size using base width for consistency across images
-        step_size = int(base.width / self.stepcount)
+        step_size = self.step_size
         # iterate through and draw lines vertically and then horizontally
         for x in range(0, im.width, step_size):
             line = ((x, y_start), (x, y_end))
@@ -181,7 +185,7 @@ class ImageProcessing(object):
         im.save(grid_save_name)
 
     # improvement of grid values
-    def grid_values_test(self):
+    def grid_values(self):
         # read in image
         im = cv.imread(self.final_save_name, 0)
 
@@ -189,15 +193,15 @@ class ImageProcessing(object):
         height, width = im.shape
 
         # set step size using base width for consistency across images
-        step_size = int(width / self.stepcount)
+        step_size = self.step_size
 
         # initialise variables
         x_current = 0
         y_current = 0
 
         # calculate number of grids, and round up for partial vertical grids in order to count them
-        gridsx = int(self.stepcount)
-        gridsy = int(math.ceil(height * self.stepcount / width))
+        gridsx = int(math.ceil(width/self.step_size))
+        gridsy = int(math.ceil(height/self.step_size))
 
         # preallocate size of stdev and average for MAXIMUM SPEED
         stdev = np.zeros((gridsy, gridsx), dtype=np.float32)
@@ -261,31 +265,19 @@ class ImageProcessing(object):
 # iterate through every file in the folder photos_test
 i = 0
 for filename in os.listdir(os.path.join(os.getcwd(), "nir_test")):
-    imPr = ImageProcessing(9, "nir_test", filename, "nir_test_0.PNG", "Final" + str(i) + ".png", "NIR Test Out")
+    # inputs: pixels/inch, size of each grid in inches, filename, baseline image name, output name, output folder
+    imPr = ImageProcessing(10, 7, "nir_test", filename, "nir_test_0.PNG", "Final" + str(i) + ".png", "NIR Test Out")
 
     imPr.SIFT()
 
     imPr.image_gridding()
 
-    [standard_dev, average] = imPr.grid_values_test()
+    [standard_dev, average] = imPr.grid_values()
 
-    imPr.write_to_file(standard_dev, average)
+    #imPr.write_to_file(standard_dev, average)
 
     i = i+1
 
 # STILL NEED TO ADD INPUT FOR REFERENCE DISTANCE PIXEL VALUES FOR GRIDDING FUNCTION
 
-# out of date script below
-
-
-# try out with higher photo downloads
-# imPr = ImageProcessing(9, "Photos", "whats9.jpeg", "whats1.jpeg", "Final.png", "Processed_Images")
-#
-# imPr.SIFT()
-#
-# imPr.image_gridding()
-#
-# [standard_dev, average] = imPr.grid_values_test()
-#
-# imPr.write_to_file(standard_dev, average)
 
