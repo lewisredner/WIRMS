@@ -243,7 +243,7 @@ class ImageProcessing(object):
         new_word = new_name.findall(self.save_name)
         # if we want to create the data file, parse in a non zero karg to change the file extension
         if h5 != 0:
-            out_name = new_word[0] + addition + 'netCDF4'
+            out_name = new_word[0] + addition + 'nc'
         else:
             # add addition to file name and save image w/ grids
             out_name = new_word[0] + addition + new_word[1]
@@ -256,10 +256,20 @@ class ImageProcessing(object):
         # generate save name
         net_save_name = ImageProcessing.save_stitcher(self, '_statistics.', 1)
         # create root group
-        rootgrp = Dataset(net_save_name, "a")
+        rootgrp = Dataset(net_save_name, "w", format = "NETCDF4")
         # create sub groups
         meangrp = rootgrp.createGroup("Mean")
         stdgrp = rootgrp.createGroup("Standard Deviation")
+        # create dimensions of groups
+        kms = ave.shape
+        meangrp.createDimension('average', ave.shape)
+        stdgrp.createDimension('std', std.shape)
+        # create variables
+        averages = meangrp.createVariable("average","f8",("average"))
+        stds = stdgrp.createVariable("std","f8",("standard deviation"))
+        # assign data
+        averages[:] = ave
+        stds[:] = std
 
 
 # iterate through every file in the folder photos_test
@@ -274,10 +284,9 @@ for filename in os.listdir(os.path.join(os.getcwd(), "nir_test")):
 
     [standard_dev, average] = imPr.grid_values()
 
-    #imPr.write_to_file(standard_dev, average)
+    imPr.write_to_file(standard_dev, average)
 
     i = i+1
 
-# STILL NEED TO ADD INPUT FOR REFERENCE DISTANCE PIXEL VALUES FOR GRIDDING FUNCTION
 
 
