@@ -8,8 +8,8 @@ import matplotlib.pyplot as plt
 import re
 from PIL import Image, ImageDraw
 import os
-import h5py
 import math
+from netCDF4 import Dataset
 
 
 class ImageProcessing(object):
@@ -180,43 +180,6 @@ class ImageProcessing(object):
 
         im.save(grid_save_name)
 
-    # takes pixel values of each grid OBSOLETE
-    def grid_values(self):
-        # read in image (colour)
-        im = cv.imread(self.final_save_name, 0)
-
-        # get image dimensions (will break with colour image)
-        height, width = im.shape
-
-        # set step size using base width for consistency across images
-        step_size = int(width / self.stepcount)
-
-        # initialise variables
-        x_current = 0
-        y_current = 0
-
-        gridsx = int(self.stepcount)
-        gridsy = int(height * self.stepcount / width)
-        # preset array sized for the number of grids horizontally and vertically
-        # std
-        stdev = np.zeros((gridsy, gridsx), dtype=np.float32)
-        # mean
-        average = np.zeros((gridsy, gridsx), dtype=np.float32)
-        # get standard deviation of each grid
-        for i in range(gridsy):
-            # iterate through for the number of grids in the x direction
-            for j in range(gridsx):
-                # iterate through for the values in each grid along the x then y axes from bottom to top
-                stdev[i, j] = np.std(im[y_current:y_current + step_size, x_current:x_current + step_size])
-                average[i, j] = np.mean(im[y_current:y_current + step_size, x_current:x_current + step_size])
-                # iterate the x value across the width of the image
-                x_current = x_current + step_size
-            # reset the x location
-            x_current = 0
-            # iterate the y location to end
-            y_current = y_current + step_size
-        return stdev, average
-
     # improvement of grid values
     def grid_values_test(self):
         # read in image
@@ -276,7 +239,7 @@ class ImageProcessing(object):
         new_word = new_name.findall(self.save_name)
         # if we want to create the data file, parse in a non zero karg to change the file extension
         if h5 != 0:
-            out_name = new_word[0] + addition + 'hdf5'
+            out_name = new_word[0] + addition + 'netCDF4'
         else:
             # add addition to file name and save image w/ grids
             out_name = new_word[0] + addition + new_word[1]
@@ -326,4 +289,3 @@ for filename in os.listdir(os.path.join(os.getcwd(), "nir_test")):
 #
 # imPr.write_to_file(standard_dev, average)
 
-# NOTE TO SELF: CLOSE FIGURES CREATED THROUGH THE PYPLOT INTERFACE, ELSE THEY CONSUME TOO MUCH MEMORY
