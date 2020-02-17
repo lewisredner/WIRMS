@@ -243,7 +243,7 @@ class ImageProcessing(object):
         new_word = new_name.findall(self.save_name)
         # if we want to create the data file, parse in a non zero karg to change the file extension
         if h5 != 0:
-            out_name = new_word[0] + addition + 'hdf5'
+            out_name = new_word[0] + addition + 'h5'
         else:
             # add addition to file name and save image w/ grids
             out_name = new_word[0] + addition + new_word[1]
@@ -264,12 +264,19 @@ class ImageProcessing(object):
         dset2 = f.create_dataset("average", ave.shape, dtype='i8')
         dset2[...] = ave
 
+## MAIN SCRIPT
+pixels_per_inch = 10
+grid_size = 1 # inches
+read_folder = "cluster"
+baseline_img = "dry_0.PNG"
+write_folder = "Cluster Out"
+
 
 # iterate through every file in the folder photos_test
 i = 0
-for filename in os.listdir(os.path.join(os.getcwd(), "nir_test")):
-    # inputs: pixels/inch, size of each grid in inches, filename, baseline image name, output name, output folder
-    imPr = ImageProcessing(10, 7, "nir_test", filename, "nir_test_0.PNG", "Final" + str(i) + ".png", "NIR Test Out")
+for filename in os.listdir(os.path.join(os.getcwd(), "cluster")):
+    # inputs: pixels/inch, size of each grid in inches, read folder, filename, baseline image name, output name, output folder
+    imPr = ImageProcessing(pixels_per_inch, grid_size, read_folder, filename, baseline_img, filename, write_folder)
 
     imPr.SIFT()
 
@@ -280,6 +287,3 @@ for filename in os.listdir(os.path.join(os.getcwd(), "nir_test")):
     imPr.write_to_file(standard_dev, average)
 
     i = i+1
-
-
-
