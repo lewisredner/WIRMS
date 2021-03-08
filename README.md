@@ -1,2 +1,2 @@
 # WIRMS
-Hello there, General Kenobi
+SIFT Algorithm code.
